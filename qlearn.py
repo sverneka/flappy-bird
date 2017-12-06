@@ -14,8 +14,8 @@ import numpy as np
 from collections import deque
 
 import json
-from keras import initializations
-from keras.initializations import normal, identity
+from keras import initializers
+from keras.initializers import normal, identity
 from keras.models import model_from_json
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
@@ -30,7 +30,7 @@ GAMMA = 0.99 # decay rate of past observations
 OBSERVATION = 3200. # timesteps to observe before training
 EXPLORE = 3000000. # frames over which to anneal epsilon
 FINAL_EPSILON = 0.0001 # final value of epsilon
-INITIAL_EPSILON = 0.1 # starting value of epsilon
+INITIAL_EPSILON = 0.2 # starting value of epsilon
 REPLAY_MEMORY = 50000 # number of previous transitions to remember
 BATCH = 32 # size of minibatch
 FRAME_PER_ACTION = 1
@@ -61,6 +61,7 @@ def buildmodel():
 
 def trainNetwork(model,args):
     # open up a game state to communicate with emulator
+    out_file = open("total_reward","w") 
     game_state = game.GameState()
 
     # store the previous observations in replay memory
@@ -96,6 +97,7 @@ def trainNetwork(model,args):
         epsilon = INITIAL_EPSILON
 
     t = 0
+    total_reward = 0
     while (True):
         loss = 0
         Q_sa = 0
@@ -120,6 +122,7 @@ def trainNetwork(model,args):
 
         #run the selected action and observed next state and reward
         x_t1_colored, r_t, terminal = game_state.frame_step(a_t)
+        terminal_check = terminal
 
         x_t1 = skimage.color.rgb2gray(x_t1_colored)
         x_t1 = skimage.transform.resize(x_t1,(80,80))
@@ -188,6 +191,13 @@ def trainNetwork(model,args):
         print("TIMESTEP", t, "/ STATE", state, \
             "/ EPSILON", epsilon, "/ ACTION", action_index, "/ REWARD", r_t, \
             "/ Q_MAX " , np.max(Q_sa), "/ Loss ", loss)
+
+        if terminal_check:
+            print("Total rewards: ", total_reward) 
+            out_file.write(str(total_reward)+"\n")    
+            total_reward = 0
+        else:
+            total_reward = total_reward + r_t
 
     print("Episode finished!")
     print("************************")
