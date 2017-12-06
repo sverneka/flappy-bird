@@ -72,10 +72,13 @@ def buildmodel():
 
 def trainNetwork(model,args):
     # open up a game state to communicate with emulator
+
     log_file_name = datetime.datetime.now().strftime("log_%Y_%m_%d_%H_%M_%S.txt")
     log_file = open(log_file_name, "w")
     backup = sys.stdout
     sys.stdout = Tee(sys.stdout, log_file)
+    
+
     game_state = game.GameState()
 
     # store the previous observations in replay memory
@@ -207,7 +210,9 @@ def trainNetwork(model,args):
 
         if terminal_check:
             print("Total rewards: ", total_reward) 
-            out_file.write(str(total_reward)+"\n")    
+            out_file = open("total_reward","aw") 
+            out_file.write(str(total_reward)+"\n")
+            out_file.close()    
             total_reward = 0
         else:
             total_reward = total_reward + r_t
