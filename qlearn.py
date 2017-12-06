@@ -61,7 +61,7 @@ def buildmodel():
 
 def trainNetwork(model,args):
     # open up a game state to communicate with emulator
-    out_file = open("total_reward","w") 
+    
     game_state = game.GameState()
 
     # store the previous observations in replay memory
@@ -194,7 +194,9 @@ def trainNetwork(model,args):
 
         if terminal_check:
             print("Total rewards: ", total_reward) 
-            out_file.write(str(total_reward)+"\n")    
+            out_file = open("total_reward","aw") 
+            out_file.write(str(total_reward)+"\n")
+            out_file.close()    
             total_reward = 0
         else:
             total_reward = total_reward + r_t
