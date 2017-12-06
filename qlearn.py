@@ -23,6 +23,9 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD , Adam
 import tensorflow as tf
 
+import os
+import datetime # for logging timestamp
+
 GAME = 'bird' # the name of the game being played for log files
 CONFIG = 'nothreshold'
 ACTIONS = 2 # number of valid actions
@@ -39,6 +42,14 @@ LEARNING_RATE = 1e-4
 img_rows , img_cols = 80, 80
 #Convert image into Black and white
 img_channels = 4 #We stack 4 frames
+
+# https://stackoverflow.com/questions/17866724/python-logging-print-statements-while-having-them-print-to-stdout
+class Tee(object):
+    def __init__(self, *files):
+        self.files = files
+    def write(self, obj):
+        for f in self.files:
+            f.write(obj)
 
 def buildmodel():
     print("Now we build the model")
@@ -62,6 +73,10 @@ def buildmodel():
 def trainNetwork(model,args):
     # open up a game state to communicate with emulator
     out_file = open("total_reward","w") 
+    log_file_name = datetime.datetime.now().strftime("log_%Y_%m_%d_%H_%M_%S.txt")
+    log_file = open(log_file_name, "w")
+    backup = sys.stdout
+    sys.stdout = Tee(sys.stdout, log_file)
     game_state = game.GameState()
 
     # store the previous observations in replay memory
@@ -88,10 +103,11 @@ def trainNetwork(model,args):
         OBSERVE = 999999999    #We keep observe, never train
         epsilon = FINAL_EPSILON
         print ("Now we load weight")
-        model.load_weights("model.h5")
+        if os.path.isfile("model.h5"):
+            model.load_weights("model.h5")
+            print ("Weight load successfully")
         adam = Adam(lr=LEARNING_RATE)
         model.compile(loss='mse',optimizer=adam)
-        print ("Weight load successfully")    
     else:                       #We go to training mode
         OBSERVE = OBSERVATION
         epsilon = INITIAL_EPSILON
@@ -188,9 +204,7 @@ def trainNetwork(model,args):
         else:
             state = "train"
 
-        print("TIMESTEP", t, "/ STATE", state, \
-            "/ EPSILON", epsilon, "/ ACTION", action_index, "/ REWARD", r_t, \
-            "/ Q_MAX " , np.max(Q_sa), "/ Loss ", loss)
+        printInfo(t, state, epsilon, action_index, r_t, Q_sa, loss)
 
         if terminal_check:
             print("Total rewards: ", total_reward) 
@@ -201,6 +215,11 @@ def trainNetwork(model,args):
 
     print("Episode finished!")
     print("************************")
+
+def printInfo(t, state, epsilon, action_index, r_t, Q_sa, loss):
+    print("TIMESTEP", t, "/ STATE", state, \
+          "/ EPSILON", epsilon, "/ ACTION", action_index, "/ REWARD", r_t, \
+          "/ Q_MAX " , np.max(Q_sa), "/ Loss ", loss)
 
 def playGame(args):
     model = buildmodel()
