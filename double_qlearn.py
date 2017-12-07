@@ -18,6 +18,7 @@ from keras import initializers
 from keras.initializers import normal, identity
 from keras.models import model_from_json
 from keras.models import Sequential
+from keras.models import clone_model
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD , Adam
@@ -39,7 +40,7 @@ REPLAY_MEMORY = 50000 # number of previous transitions to remember
 BATCH = 32 # size of minibatch
 FRAME_PER_ACTION = 1
 LEARNING_RATE = 1e-4
-TARGET_UPDATE = 1000
+TARGET_UPDATE = 4000
 
 img_rows , img_cols = 80, 80
 #Convert image into Black and white
@@ -82,7 +83,7 @@ def trainNetwork(model,args):
     sys.stdout = Tee(sys.stdout, log_file)
 
     #Create target network            
-    target_model = deepcopy(model)
+    
 
     game_state = game.GameState()
 
@@ -103,7 +104,8 @@ def trainNetwork(model,args):
 
     #In Keras, need to reshape
     s_t = s_t.reshape(1, s_t.shape[0], s_t.shape[1], s_t.shape[2])  #1*80*80*4
-
+    target_model = clone_model(model)
+    target_model.set_weights(model.get_weights())
     
 
     if args['mode'] == 'Run':
@@ -184,24 +186,26 @@ def trainNetwork(model,args):
                 #targets[i] = model.predict(state_t)  # Hitting each buttom probability
                 Q_target = target_model.predict(state_t1)
                 Q_sa = model.predict(state_t1)
-                maxQ_ind = np.argmax(Q_sa,axis = 0)
+                maxQ_ind = np.argmax(Q_sa,axis = 1)
+               
                 
                 if terminal:
                     targets[i, action_t] = reward_t
                 else:
-                    targets[i, action_t] = reward_t + GAMMA * Q_target[maxQ_ind]
+                    targets[i, action_t] = reward_t + GAMMA * Q_target[0][maxQ_ind]
 
             # targets2 = normalize(targets)
 
 
             loss += model.train_on_batch(inputs, targets)
 
+
         s_t = s_t1
         t = t + 1
 
-        if t % TARGET_UPDATE == 0
-            print("opy to target model")
-            target_model = deepcopy(model)
+        if t % TARGET_UPDATE == 0 :
+            print("Copy to target model----------------------------")
+            target_model.set_weights(model.get_weights())
         # save progress every 10000 iterations
         if t % 1000 == 0:
             print("Now we save model")
