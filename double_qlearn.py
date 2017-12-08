@@ -198,6 +198,7 @@ def trainNetwork(model,args):
 
 
             loss += model.train_on_batch(inputs, targets)
+            
 
 
         s_t = s_t1

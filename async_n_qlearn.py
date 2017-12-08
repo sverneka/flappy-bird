@@ -225,7 +225,7 @@ def trainNetwork(model,args):
 
         if terminal or t%NSTEP==0:
             r_tmp = 0
-            if not termial  
+            if not terminal:  
                 r_tmp = np.max(model.predict(s_t))
 
             inputs = np.zeros((len(r_batch), s_t.shape[1], s_t.shape[2], s_t.shape[3]))
