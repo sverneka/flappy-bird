@@ -133,8 +133,8 @@ def trainNetwork(model,args):
 
 
         s_batch = []
-        a_batch = []
-        target_batch = []
+        r_batch = []
+        
         #choose an action epsilon greedy
         if t % FRAME_PER_ACTION == 0:
             if random.random() <= epsilon:
@@ -176,7 +176,7 @@ def trainNetwork(model,args):
 
         #    inputs = np.zeros((BATCH, s_t.shape[1], s_t.shape[2], s_t.shape[3]))   #32, 80, 80, 4
         #    print (inputs.shape)
-        targets = np.zeros([ACTIONS])                         # 2
+                                 # 2
 
             #Now we do the experience replay
         #    for i in range(0, len(minibatch)):
@@ -189,21 +189,21 @@ def trainNetwork(model,args):
 
         #        inputs[i:i + 1] = state_t    #I saved down s_t
 
-        targets = np.reshape(model.predict(s_t),(2))  # Hitting each buttom probability
+        #targets = np.reshape(model.predict(s_t),(2))  # Hitting each buttom probability
         #print(targets)
-        Q_target = target_model.predict(s_t1)
+        #Q_target = target_model.predict(s_t1)
                 #Q_sa = model.predict(state_t1)
                 #maxQ_ind = np.argmax(Q_sa,axis = 1)
                
                 
-        if terminal:
-            targets[action_index] = r_t
-        else:
-            targets[action_index] = r_t + GAMMA * np.max(Q_target)
+        #if terminal:
+        #    targets[action_index] = r_t
+        #else:
+        #    targets[action_index] = r_t + GAMMA * np.max(Q_target)
 
             # targets2 = normalize(targets)
-        target_batch.append(targets)
-        a_batch.append(a_t)
+        #target_batch.append(targets)
+        r_batch.append(r_t)
         s_batch.append(s_t)
             #loss += model.train_on_batch(inputs, targets)
 
