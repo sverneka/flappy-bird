@@ -40,7 +40,7 @@ REPLAY_MEMORY = 50000 # number of previous transitions to remember
 BATCH = 32 # size of minibatch
 FRAME_PER_ACTION = 1
 LEARNING_RATE = 1e-4
-TARGET_UPDATE = 8000
+TARGET_UPDATE = 6000
 NETWORK_UPDATE = 32
 NSTEP = 5
 
@@ -232,7 +232,8 @@ def trainNetwork(model,args):
             targets = np.zeros((inputs.shape[0], ACTIONS)) 
 
             for i in range(0, len(r_batch)):
-                targets[i,a_batch[i]] = r_batch[i] + GAMMA * r_tmp
+                r_tmp = r_batch[i] + GAMMA * r_tmp
+                targets[i,a_batch[i]] = r_tmp
                 inputs[i:i+1] = s_batch[i]
 
             loss += model.train_on_batch(inputs, targets)        
