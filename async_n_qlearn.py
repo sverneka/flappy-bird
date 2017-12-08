@@ -40,7 +40,7 @@ REPLAY_MEMORY = 50000 # number of previous transitions to remember
 BATCH = 32 # size of minibatch
 FRAME_PER_ACTION = 1
 LEARNING_RATE = 1e-4
-TARGET_UPDATE = 6000
+TARGET_UPDATE = 4000
 NETWORK_UPDATE = 32
 NSTEP = 5
 
@@ -226,7 +226,7 @@ def trainNetwork(model,args):
         if terminal or t%NSTEP==0:
             r_tmp = 0
             if not terminal:  
-                r_tmp = np.max(model.predict(s_t))
+                r_tmp = np.max(target_model.predict(s_t))
 
             inputs = np.zeros((len(r_batch), s_t.shape[1], s_t.shape[2], s_t.shape[3]))
             targets = np.zeros((inputs.shape[0], ACTIONS)) 
