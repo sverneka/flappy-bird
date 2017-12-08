@@ -71,6 +71,7 @@ def buildmodel():
     return model
 
 def trainNetwork(model,args):
+    SAME_LINE = False
     # open up a game state to communicate with emulator
 
     log_file_name = datetime.datetime.now().strftime("log_%Y_%m_%d_%H_%M_%S.txt")
@@ -87,7 +88,7 @@ def trainNetwork(model,args):
     # get the first state by doing nothing and preprocess the image to 80x80x4
     do_nothing = np.zeros(ACTIONS)
     do_nothing[0] = 1
-    x_t, r_0, terminal = game_state.frame_step(do_nothing)
+    x_t, r_0, terminal, curr_score = game_state.frame_step(do_nothing)
 
     x_t = skimage.color.rgb2gray(x_t)
     x_t = skimage.transform.resize(x_t,(80,80))
@@ -139,7 +140,7 @@ def trainNetwork(model,args):
             epsilon -= (INITIAL_EPSILON - FINAL_EPSILON) / EXPLORE
 
         #run the selected action and observed next state and reward
-        x_t1_colored, r_t, terminal = game_state.frame_step(a_t)
+        x_t1_colored, r_t, terminal, curr_score = game_state.frame_step(a_t)
         terminal_check = terminal
 
         x_t1 = skimage.color.rgb2gray(x_t1_colored)
@@ -208,12 +209,28 @@ def trainNetwork(model,args):
 
         printInfo(t, state, epsilon, action_index, r_t, Q_sa, loss)
 
+        if not SAME_LINE:
+            score_file = open("scores","aw") 
+            score_file.write(str(curr_score)+"\n")
+            score_file.close()
+            SAME_LINE = True
+        else:
+            score_file = open("scores","r")
+            score_file_lines = score_file.readlines()[:-1]
+            score_file.close()
+            score_file = open("scores","w")
+            score_file.writelines(score_file_lines)
+            score_file.write(str(curr_score)+"\n")
+            score_file.close()
+
+
         if terminal_check:
             print("Total rewards: ", total_reward) 
             out_file = open("total_reward","aw") 
             out_file.write(str(total_reward)+"\n")
-            out_file.close()    
+            out_file.close()
             total_reward = 0
+            SAME_LINE = False
         else:
             total_reward = total_reward + r_t
 

@@ -143,7 +143,7 @@ class GameState:
         #print ("FPS" , FPSCLOCK.get_fps())
 	FPSCLOCK.tick(FPS)
         #print self.upperPipes[0]['y'] + PIPE_HEIGHT - int(BASEY * 0.2)
-        return image_data, reward, terminal
+        return image_data, reward, terminal, self.score
 
 def getRandomPipe():
     """returns a randomly generated pipe"""
