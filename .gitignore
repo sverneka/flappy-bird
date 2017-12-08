@@ -1,3 +1,6 @@
+*.pyc
 *.h5
-./*.json
-./*.txt
+*.json
+*.txt
+scores
+total_reward
