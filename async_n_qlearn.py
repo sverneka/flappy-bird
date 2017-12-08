@@ -42,6 +42,7 @@ FRAME_PER_ACTION = 1
 LEARNING_RATE = 1e-4
 TARGET_UPDATE = 8000
 NETWORK_UPDATE = 32
+NSTEP = 5
 
 img_rows , img_cols = 80, 80
 #Convert image into Black and white
@@ -131,7 +132,7 @@ def trainNetwork(model,args):
         r_t = 0
         a_t = np.zeros([ACTIONS])
 
-
+        a_batch = []
         s_batch = []
         r_batch = []
         
@@ -205,6 +206,7 @@ def trainNetwork(model,args):
         #target_batch.append(targets)
         r_batch.append(r_t)
         s_batch.append(s_t)
+        a_batch.append(action_index)
             #loss += model.train_on_batch(inputs, targets)
 
 
@@ -221,14 +223,23 @@ def trainNetwork(model,args):
             with open("model.json", "w") as outfile:
                 json.dump(model.to_json(), outfile)
 
-        if terminal or t%NETWORK_UPDATE==0:
-            inputs = np.zeros((len(a_batch), s_t.shape[1], s_t.shape[2], s_t.shape[3]))
+        if terminal or t%NSTEP==0:
+            r_tmp = 0
+            if not termial  
+                r_tmp = np.max(model.predict(s_t))
+
+            inputs = np.zeros((len(r_batch), s_t.shape[1], s_t.shape[2], s_t.shape[3]))
             targets = np.zeros((inputs.shape[0], ACTIONS)) 
 
-            for i in range(0, len(a_batch)):
+            for i in range(0, len(r_batch)):
+                targets[i,a_batch[i]] = r_batch[i] + GAMMA * r_tmp
                 inputs[i:i+1] = s_batch[i]
-                targets[i] = target_batch[i]
+
             loss += model.train_on_batch(inputs, targets)        
+            a_batch = []
+            s_batch = []
+            r_batch = []
+
             
 
         # print info

@@ -228,7 +228,11 @@ def trainNetwork(model,args):
             for i in range(0, len(a_batch)):
                 inputs[i:i+1] = s_batch[i]
                 targets[i] = target_batch[i]
-            loss += model.train_on_batch(inputs, targets)        
+            loss += model.train_on_batch(inputs, targets)    
+            s_batch = []
+            a_batch = []
+            target_batch = []
+
             
 
         # print info
